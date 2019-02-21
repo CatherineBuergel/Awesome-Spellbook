@@ -13,15 +13,16 @@ function drawSpellApi() {
 }
 
 function drawActiveSpell() {
-    document.querySelector('#active-spell').innerHTML = _ss.ActiveSpell.getTemplate()
+    let button = ` <button class="btn btn-danger" onclick="app.controllers.spellController.addSpell()">Add to Spellbook</button>`
+    document.querySelector('#active-spell').innerHTML = _ss.ActiveSpell.getTemplate(button)
 }
 
 function drawSpellbook() {
     let template = ''
-    _ss.MySpellBook.forEach(s => {
-        template += `
-        <li onclick="app.controllers.spellController.showDetails('${s._id}')">${s.name}</li>
-        `
+    let mySpells = _ss.MySpellBook
+    mySpells.forEach(s => {
+        let button = `<button class="btn btn-danger" onclick="app.controllers.spellController.removeSpell('${s._id}')">Remove from Spellbook</button>`
+        template += s.getSpellBookTemplate(button)
     })
     document.querySelector('#my-spellbook').innerHTML = template
 }
@@ -44,5 +45,9 @@ export default class SpellController {
 
     addSpell() {
         _ss.addSpell()
+    }
+
+    removeSpell(id) {
+        _ss.removeSpell(id)
     }
 }

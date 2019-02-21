@@ -7,6 +7,10 @@ let _spellApi = axios.create({
     baseURL: ''
 })
 
+let _sandbox = axios.create({
+    baseURL: 'https://bcw-sandbox.herokuapp.com/api/Buergel/spells/'
+})
+
 let _state = {
     spellsApi: [],
     activeSpell: {},
@@ -25,6 +29,16 @@ function setState(prop, data) {
 }
 
 export default class SpellService {
+    removeSpell(id) {
+        _sandbox.delete(id)
+            .then(res => {
+                console.log(res.data)
+                this.getMySpells()
+            })
+            .catch(err => {
+                console.error(err)
+            })
+    }
     addSubscriber(prop, fn) {
         _subscribers[prop].push(fn)
     }
@@ -44,7 +58,8 @@ export default class SpellService {
     getSpellData() {
         _spellApi.get(formatUrl('http://dnd5eapi.co/api/spells/'))
             .then(res => {
-                setState('spellsApi', res.data.results)
+                let data = res.data.results.map(s => new Spell(s))
+                setState('spellsApi', data)
             })
     }
 
@@ -56,16 +71,29 @@ export default class SpellService {
             })
     }
 
+    getMySpells() {
+        _sandbox.get()
+            .then(res => {
+                let data = res.data.data.map(s => new Spell(s))
+                setState('mySpellBook', data)
+            })
+    }
+
     showDetails(id) {
         let spell = _state.mySpellBook.find(s => s._id == id)
         setState('activeSpell', spell)
     }
 
     addSpell() {
-        let spell = _state.mySpellBook.find(s => s.name == _state.activeSpell.name)
-        if (!spell) {
-            _state.mySpellBook.push(_state.activeSpell)
-            _subscribers.mySpellBook.forEach(fn => fn())
-        }
+
+
+        let spell = _state.activeSpell
+
+        _sandbox.post('', spell)
+            .then(res => {
+                this.getMySpells()
+            })
+
     }
 }
+
